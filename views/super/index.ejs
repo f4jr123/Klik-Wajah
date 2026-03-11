@@ -1,0 +1,265 @@
+<%- include('../partials/_head') %>
+
+    <body class="">
+        <%- include('../partials/_navbar') %>
+            <div class="header bg-gradient-primary pb-6 pt-5 pt-md-8"></div>
+
+            <div class="container-fluid mt--7">
+                <div class="row mt-2">
+                    <div class="col">
+                        <div class="row">
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card bg-default shadow">
+                                    <div class="card-header bg-transparent border-0">
+                                        <h5 class="text-white mb-0">KARYAWAN</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h2 class="text-white">
+                                            <%= jumlah_karyawan || 0 %>
+                                        </h2>
+                                        <p class="text-white-50">Total Terdaftar</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card bg-default shadow">
+                                    <div class="card-header bg-transparent border-0">
+                                        <h5 class="text-white mb-0">JUMLAH ABSEN</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h2 class="text-white">
+                                            <%= jumlah_absen_hari_ini || 0 %>
+                                        </h2>
+                                        <p class="text-white-50">Total Absen Hari ini</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card bg-default shadow">
+                                    <div class="card-header bg-transparent border-0">
+                                        <h5 class="text-white mb-0">PERSENTASE</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h2 class="text-white">
+                                            <%= persentase_kehadiran %>%
+                                        </h2>
+                                        <p class="text-white-50">Tingkat Kehadiran</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card bg-default shadow">
+                                    <div class="card-header bg-transparent border-0">
+                                        <h5 class="text-white mb-0">PENGAJUAN</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h2 class="text-white">
+                                            <%= jumlah_pengajuan || 0 %>
+                                        </h2>
+                                        <p class="text-white-50">Menunggu Verifikasi</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xl-8 mb-5 mb-xl-0">
+                                <div class="card bg-default shadow">
+                                    <div class="card-header bg-transparent">
+                                        <div class="row align-items-center">
+                                            <div class="col">
+                                                <h6 class="text-uppercase text-light ls-1 mb-1">Real-time Overview</h6>
+                                                <h2 class="text-white mb-0">Komposisi Kehadiran Hari Ini</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container"
+                                            style="position: relative; height: 210px; width: 100%;">
+                                            <canvas id="chart-kehadiran"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-4">
+                                <div class="card bg-default shadow">
+                                    <div class="card-header bg-transparent">
+                                        <div class="row align-items-center">
+                                            <div class="col">
+                                                <h2 class="text-white mb-0">Detail Status</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group list-group-flush list my--3">
+                                            <li class="list-group-item px-0 bg-transparent">
+                                                <div class="row align-items-center">
+                                                    <div class="col-auto">
+                                                        <span class="badge badge-dot mr-4">
+                                                            <i class="bg-success"></i>
+                                                            <span class="status text-white">Hadir Tepat Waktu</span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col text-right">
+                                                        <span class="text-white font-weight-bold">
+                                                            <%= statistik.hadir || 0 %>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item px-0 bg-transparent">
+                                                <div class="row align-items-center">
+                                                    <div class="col-auto">
+                                                        <span class="badge badge-dot mr-4">
+                                                            <i class="bg-warning"></i>
+                                                            <span class="status text-white">Telat</span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col text-right">
+                                                        <span class="text-white font-weight-bold">
+                                                            <%= statistik.telat || 0 %>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                            <li class="list-group-item px-0 bg-transparent">
+                                                <div class="row align-items-center">
+                                                    <div class="col-auto">
+                                                        <span class="badge badge-dot mr-4">
+                                                            <i class="bg-danger"></i>
+                                                            <span class="status text-white">Alpha / Tidak Hadir</span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="col text-right">
+                                                        <span class="text-white font-weight-bold">
+                                                            <%= statistik.alpha || 0 %>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col">
+                                <div class="card bg-default shadow">
+                                    <div class="card-header bg-transparent border-0">
+                                        <h3 class="text-white mb-0">Absensi Karyawan Terbaru</h3>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table align-items-center table-dark table-flush">
+                                            <thead class="thead-dark">
+                                                <tr>
+                                                    <th scope="col">ID Karyawan</th>
+                                                    <th scope="col">Nama Karyawan</th>
+                                                    <th scope="col">Tanggal</th>
+                                                    <th scope="col">Jam Masuk</th>
+                                                    <th scope="col">Jam Keluar</th>
+                                                    <th scope="col">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% if (data_absensi.length===0) { %>
+                                                    <tr>
+                                                        <td colspan="6" class="text-center">Belum ada data absensi hari
+                                                            ini.</td>
+                                                    </tr>
+                                                    <% } else { %>
+                                                        <% for(var i=0; i < data_absensi.length; i++) { %>
+                                                            <tr>
+                                                                <th scope="row">
+                                                                    <%= data_absensi[i].id_karyawan %>
+                                                                </th>
+                                                                <th scope="row">
+                                                                    <%= data_absensi[i].nama_karyawan %>
+                                                                </th>
+                                                                <td>
+                                                                    <%= data_absensi[i].tanggal %>
+                                                                </td>
+                                                                <td>
+                                                                    <%= data_absensi[i].checkin %>
+                                                                </td>
+                                                                <td>
+                                                                    <%= data_absensi[i].checkout || '-' %>
+                                                                </td>
+                                                                <td>
+                                                                    <% if(data_absensi[i].status=='hadir' ) { %>
+                                                                        <span class="badge badge-success">Hadir</span>
+                                                                        <% } else if(data_absensi[i].status=='telat' ) {
+                                                                            %>
+                                                                            <span
+                                                                                class="badge badge-warning">Telat</span>
+                                                                            <% } else { %>
+                                                                                <span class="badge badge-danger">
+                                                                                    <%= data_absensi[i].status %>
+                                                                                </span>
+                                                                                <% } %>
+                                                                </td>
+                                                            </tr>
+                                                            <% } %>
+                                                                <% } %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br><br>
+                    </div>
+                </div>
+            </div>
+            <%- include('../partials/_foot') %>
+
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                <script>
+                    // SOLUSI AGAR TIDAK MERAH DI VS CODE:
+                    // 1. Bungkus EJS dengan tanda kutip "..." (Editor menganggap ini String biasa)
+                    // 2. Gunakan Number(...) untuk mengubahnya kembali jadi angka agar bisa dibaca Chart.js
+
+                    const valHadir = Number("<%= (typeof statistik !== 'undefined' && statistik.hadir) ? statistik.hadir : 0 %>");
+                    const valTelat = Number("<%= (typeof statistik !== 'undefined' && statistik.telat) ? statistik.telat : 0 %>");
+                    const valAlpha = Number("<%= (typeof statistik !== 'undefined' && statistik.alpha) ? statistik.alpha : 0 %>");
+
+                    const ctx = document.getElementById('chart-kehadiran').getContext('2d');
+
+                    // Cek di Console Browser apakah angkanya masuk
+                    console.log("Data Grafik:", { valHadir, valTelat, valAlpha });
+
+                    const myChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Hadir', 'Telat', 'Alpha'],
+                            datasets: [{
+                                label: 'Jumlah Karyawan',
+                                data: [valHadir, valTelat, valAlpha],
+                                backgroundColor: [
+                                    '#2dce89', // Hijau
+                                    '#fb6340', // Orange
+                                    '#f5365c'  // Merah
+                                ],
+                                borderColor: '#172b4d',
+                                borderWidth: 2,
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: '#f8f9fe',
+                                        font: { size: 14 }
+                                    }
+                                }
+                            },
+                            cutout: '70%',
+                        }
+                    });
+                </script>
+    </body>

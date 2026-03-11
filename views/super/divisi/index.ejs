@@ -1,0 +1,107 @@
+<%- include('../../partials/_head') %>
+
+    <!-- 1. Tambahkan CSS untuk DataTables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
+    <style>
+        /* 2. Style untuk tema gelap dan pointer */
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            color: #f8f9fe !important;
+            cursor: pointer;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            color: #8898aa !important;
+        }
+
+        .dataTables_wrapper .dataTables_length label,
+        .dataTables_wrapper .dataTables_filter label {
+            color: #f8f9fe;
+        }
+
+        .dataTables_wrapper .dataTables_length select {
+            background-color: #5e72e4;
+            color: #ffffff;
+        }
+
+        .dataTables_wrapper .dataTables_filter input {
+            background-color: #555;
+            color: #ffffff;
+        }
+    </style>
+
+    <body class="">
+        <%- include('../../partials/_navbar') %>
+            <div class="header bg-gradient-primary pb-6 pt-5 pt-md-8"></div>
+            <div class="container-fluid mt--7">
+                <div class="row"></div>
+                <div class="row mt-2">
+                    <div class="col">
+
+                        <div class="row"></div>
+                        <div class="row mt-2">
+                            <div class="col">
+                            </div>
+                        </div>
+                        <div class="card bg-default shadow">
+
+                            <div
+                                class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                                <h3 class="text-white mb-0">Data Divisi</h3>
+                                <!-- Tombol diubah jadi 'btn-neutral' agar serasi -->
+                                <a href="/divisi/add" class="btn btn-neutral my-2">
+                                    Add
+                                </a>
+                            </div>
+
+                            <!-- Garis pemisah ditambahkan -->
+                            <hr class="my-0" style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
+
+                            <%- include('../../partials/_messages') %>
+
+                                <!-- Wrapper untuk padding DataTables -->
+                                <div class="card-body px-0 py-0">
+                                    <div class="table-responsive p-4">
+                                        <!-- 3. Tambahkan ID unik pada tabel -->
+                                        <table class="table align-items-center table-dark table-flush"
+                                            id="tabel-divisi">
+                                            <thead class="thead-dark">
+                                                <tr>
+                                                    <th scope="col">#</th>
+                                                    <th scope="col">ID Divisi</th>
+                                                    <th scope="col">Nama Divisi</th>
+                                                    <th scope="col" style="width: 21%;">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% for(var i=0; i < data.length; i++) { %>
+                                                    <tr>
+                                                        <th scope="row">
+                                                            <%= i+1 %>
+                                                        </th>
+                                                        <td>
+                                                            000-<%= data[i].id_divisi %>
+                                                        </td>
+                                                        <td>
+                                                            <%= data[i].nama_divisi %>
+                                                        </td>
+                                                        <td>
+                                                            <a href="/divisi/edit/<%= data[i].id_divisi %>"
+                                                                class="btn btn-info btn-sm">Edit</a>
+                                                            <a href="/divisi/delete/<%= data[i].id_divisi %>"
+                                                                onclick="return confirm('Yakin mau menghapus divisi ini?')"
+                                                                class="btn btn-warning btn-sm">Hapus</a>
+                                                        </td>
+                                                    </tr>
+                                                    <% } %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <%- include('../../partials/_foot') %>
+                <%- include('../../partials/_scripts_datatable') %>

@@ -1,0 +1,82 @@
+<!-- views/partials/_scripts_datatable.ejs -->
+
+<!-- 1. JQuery (Wajib dimuat pertama untuk DataTables) -->
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+
+<!-- 2. DataTables Core & Bootstrap 4 Integration -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+
+<!-- 3. Inisialisasi Otomatis DataTables -->
+<script>
+    $(document).ready(function () {
+
+        // --- KONFIGURASI LENGKAP (UNTUK SEMUA TABEL KECUALI PENGAJUAN) ---
+        const dataTableConfigFull = {
+            "language": {
+                "search": "Cari:",
+                "lengthMenu": "Tampilkan _MENU_ data",
+                "info": "Menampilkan _START_ s/d _END_ dari _TOTAL_ data",
+                "infoEmpty": "Menampilkan 0 data",
+                "infoFiltered": "(disaring dari _MAX_ total data)",
+                "zeroRecords": "Tidak ada data yang cocok",
+                "paginate": {
+                    "first": "Awal",
+                    "last": "Akhir",
+                    "next": "<i class='ni ni-bold-right'></i>",
+                    "previous": "<i class='ni ni-bold-left'></i>"
+                }
+            }
+        };
+
+        // Inisialisasi untuk tabel-tabel standar
+        // (Kita cek satu per satu, jika ada maka aktifkan)
+
+        // Tabel Manage Users
+        if ($('#tabel-manage-users').length) {
+            $('#tabel-manage-users').DataTable(dataTableConfigFull);
+        }
+
+        // Tabel Divisi (No Sort di kolom Aksi/terakhir)
+        if ($('#tabel-divisi').length) {
+            $('#tabel-divisi').DataTable({
+                ...dataTableConfigFull,
+                "columnDefs": [{ "orderable": false, "targets": [3] }]
+            });
+        }
+
+        // Tabel Karyawan (No Sort di kolom Wajah & Aksi)
+        if ($('#tabel-karyawan').length) {
+            $('#tabel-karyawan').DataTable({
+                ...dataTableConfigFull,
+                "columnDefs": [{ "orderable": false, "targets": [4, 5] }]
+            });
+        }
+
+        // Tabel Absensi (No Sort di kolom Aksi)
+        if ($('#tabel-absensi').length) {
+            $('#tabel-absensi').DataTable({
+                ...dataTableConfigFull,
+                "columnDefs": [{ "orderable": false, "targets": [6] }]
+            });
+        }
+
+        // Tabel Pengajuan Absen (HANYA SORTING)
+        if ($('#tabel-pengajuan').length) {
+            $('#tabel-pengajuan').DataTable({
+                "ordering": true,      // <-- Biarkan sorting tetap nyala (default)
+                "paging": false,       // <-- MATIKAN Paginasi
+                "searching": false,    // <-- MATIKAN Search
+                "info": false,         // <-- MATIKAN Info "Showing..."
+                "lengthChange": false, // <-- MATIKAN Dropdown "Show X..."
+                "language": {
+                    // Hanya sisakan teks yang mungkin muncul (jika 0 data)
+                    "zeroRecords": "Tidak ada data yang cocok"
+                },
+                "columnDefs": [
+                    { "orderable": false, "targets": [6, 7] } // Tetap nonaktifkan sort di Aksi
+                ]
+            });
+        }
+    });
+</script>

@@ -1,0 +1,27 @@
+<%- include('../../partials/_head') %>
+
+    <body class="">
+        <%- include('../../partials/_navbar') %>
+            <div class="header bg-gradient-primary pb-6 pt-5 pt-md-8"></div>
+            <div class="container-fluid mt--7">
+                <div class="row"></div>
+                <div class="row mt-2">
+                    <div class="col"></div>
+                </div>
+                <div class="card bg-secondary shadow px-5">
+                    <div style="margin: 5vh 0 3vh 0 ;">
+                        <h2>Form Edit Divisi</h2>
+                    </div>
+                    <form role="form" method="post" action="/divisi/update/<%= data.id_divisi %>">
+                        <div class="form-group">
+                            <label for="example-text-input" class="form-control-label">Nama Divisi</label>
+                            <input class="form-control" type="text" id="example-text-input" name="nama_divisi"
+                                value="<%= data.nama_divisi %>">
+                        </div>
+                        <div class="py-2 text-right">
+                            <input type="submit" class="btn btn-info">
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <%- include('../../partials/_foot') %>

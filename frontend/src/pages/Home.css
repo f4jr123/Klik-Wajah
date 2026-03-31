@@ -189,8 +189,15 @@
 }
 
 @keyframes scanMove {
-  0%, 100% { top: 15%; }
-  50% { top: 80%; }
+
+  0%,
+  100% {
+    top: 15%;
+  }
+
+  50% {
+    top: 80%;
+  }
 }
 
 .face-icon {

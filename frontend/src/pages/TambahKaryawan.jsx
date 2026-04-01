@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getKaryawanPrepareAdd, tambahKaryawan } from '../services/api.js'
 import './TambahKaryawan.css'
 
@@ -14,10 +14,67 @@ function TambahKaryawan() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [alert, setAlert] = useState(null)
+  
+  const [cameraActive, setCameraActive] = useState(false)
+  const [capturedImage, setCapturedImage] = useState(null)
+  const videoRef = useRef(null)
+  const canvasRef = useRef(null)
 
   useEffect(() => {
     fetchDivisi()
+    return () => {
+      stopCamera()
+    }
   }, [])
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        setCameraActive(true)
+        setCapturedImage(null)
+      }
+    } catch (err) {
+      setAlert({ type: 'danger', message: 'Kamera tidak dapat diakses: ' + err.message })
+    }
+  }
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks()
+      tracks.forEach(track => track.stop())
+      videoRef.current.srcObject = null
+    }
+    setCameraActive(false)
+  }
+
+  const captureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current
+      const canvas = canvasRef.current
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      const ctx = canvas.getContext('2d')
+      
+      // Draw frame to canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      const imageUrl = canvas.toDataURL('image/jpeg')
+      setCapturedImage(imageUrl)
+      stopCamera()
+      
+      // Mocking 128D Face Descriptor
+      const mockDescriptor = Array.from({ length: 128 }, () => Number((Math.random() * 2 - 1).toFixed(4)))
+      setFormData(prev => ({ ...prev, faceDescriptor: JSON.stringify(mockDescriptor) }))
+      setAlert({ type: 'success', message: 'Wajah berhasil dipindai dan Face Descriptor dibuat.' })
+    }
+  }
+
+  const retakeImage = () => {
+    setCapturedImage(null)
+    setFormData(prev => ({ ...prev, faceDescriptor: '' }))
+    startCamera()
+  }
 
   const fetchDivisi = async () => {
     try {
@@ -129,10 +186,71 @@ function TambahKaryawan() {
               </select>
             </div>
 
+            {/* Camera Section */}
+            <div className="form-group full-width camera-section">
+              <label>Pindai Wajah</label>
+              
+              <div className="camera-viewport">
+                {!cameraActive && !capturedImage && (
+                  <div className="camera-placeholder">
+                    <div className="camera-placeholder-icon">📸</div>
+                    <p>Aktifkan kamera untuk memindai wajah karyawan.</p>
+                  </div>
+                )}
+                
+                <video 
+                  ref={videoRef} 
+                  autoPlay 
+                  playsInline 
+                  className={`camera-video ${cameraActive && !capturedImage ? 'active' : ''}`}
+                ></video>
+                
+                {cameraActive && !capturedImage && (
+                  <div className="face-indicator detected">
+                    <span className="indicator-dot"></span> Mendeteksi Wajah...
+                  </div>
+                )}
+                
+                {capturedImage && (
+                  <div className="captured-preview">
+                    <img src={capturedImage} alt="Captured Face" />
+                    <div className="captured-badge">✓ Wajah Tersimpan</div>
+                  </div>
+                )}
+                
+                <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+              </div>
+              
+              <div className="camera-controls">
+                {!cameraActive && !capturedImage && (
+                  <button type="button" className="btn-camera btn-open-camera" onClick={startCamera}>
+                    📸 Buka Kamera
+                  </button>
+                )}
+                
+                {cameraActive && !capturedImage && (
+                  <>
+                    <button type="button" className="btn-camera btn-capture" onClick={captureImage}>
+                      <span className="capture-btn-inner">🧿 Ambil Foto</span>
+                    </button>
+                    <button type="button" className="btn-camera btn-stop" onClick={stopCamera}>
+                      ❌ Batal
+                    </button>
+                  </>
+                )}
+                
+                {capturedImage && (
+                  <button type="button" className="btn-camera btn-retake" onClick={retakeImage}>
+                    🔄 Foto Ulang
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div className="form-group full-width">
               <label htmlFor="faceDescriptor">Face Descriptor (JSON)</label>
               <textarea
-                className="form-control"
+                className="form-control descriptor-textarea"
                 id="faceDescriptor"
                 name="faceDescriptor"
                 placeholder='Data face descriptor dalam format JSON array, contoh: [0.123, -0.456, ...]'

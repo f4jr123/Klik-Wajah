@@ -1,289 +1,100 @@
-import { useState, useEffect, useRef } from 'react'
-import { getKaryawanPrepareAdd, tambahKaryawan } from '../services/api.js'
-import './TambahKaryawan.css'
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import './TambahKaryawan.css';
 
 function TambahKaryawan() {
   const [formData, setFormData] = useState({
-    id_karyawan: '',
-    nama_karyawan: '',
-    id_divisi: '',
-    faceDescriptor: ''
-  })
-
-  const [divisiList, setDivisiList] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [alert, setAlert] = useState(null)
+    id_karyawan: '', nik: '', nama_karyawan: '', id_divisi: '', face_embedding: '', status: 'aktif'
+  });
+  const [divisiList, setDivisiList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [alert, setAlert] = useState(null);
   
-  const [cameraActive, setCameraActive] = useState(false)
-  const [capturedImage, setCapturedImage] = useState(null)
-  const videoRef = useRef(null)
-  const canvasRef = useRef(null)
+  const [cameraActive, setCameraActive] = useState(false);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
-    fetchDivisi()
-    return () => {
-      stopCamera()
-    }
-  }, [])
+    // Fetch Divisi
+    const fetchDivisi = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/divisi');
+        setDivisiList(res.data);
+      } catch (err) { console.error(err); }
+      finally { setLoading(false); }
+    };
+    fetchDivisi();
+  }, []);
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        setCameraActive(true)
-        setCapturedImage(null)
+        videoRef.current.srcObject = stream;
+        setCameraActive(true);
       }
-    } catch (err) {
-      setAlert({ type: 'danger', message: 'Kamera tidak dapat diakses: ' + err.message })
-    }
-  }
-
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks()
-      tracks.forEach(track => track.stop())
-      videoRef.current.srcObject = null
-    }
-    setCameraActive(false)
-  }
-
-  const captureImage = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current
-      const canvas = canvasRef.current
-      canvas.width = video.videoWidth
-      canvas.height = video.videoHeight
-      const ctx = canvas.getContext('2d')
-      
-      // Draw frame to canvas
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-      const imageUrl = canvas.toDataURL('image/jpeg')
-      setCapturedImage(imageUrl)
-      stopCamera()
-      
-      // Mocking 128D Face Descriptor
-      const mockDescriptor = Array.from({ length: 128 }, () => Number((Math.random() * 2 - 1).toFixed(4)))
-      setFormData(prev => ({ ...prev, faceDescriptor: JSON.stringify(mockDescriptor) }))
-      setAlert({ type: 'success', message: 'Wajah berhasil dipindai dan Face Descriptor dibuat.' })
-    }
-  }
-
-  const retakeImage = () => {
-    setCapturedImage(null)
-    setFormData(prev => ({ ...prev, faceDescriptor: '' }))
-    startCamera()
-  }
-
-  const fetchDivisi = async () => {
-    try {
-      const res = await getKaryawanPrepareAdd()
-      if (res.data.status) {
-        setDivisiList(res.data.divisi)
-      }
-    } catch (err) {
-      setAlert({ type: 'danger', message: 'Gagal memuat data divisi. Pastikan backend berjalan.' })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setSubmitting(true)
-    setAlert(null)
-
-    try {
-      const payload = {
-        ...formData,
-        faceDescriptor: formData.faceDescriptor
-          ? JSON.parse(formData.faceDescriptor)
-          : []
-      }
-      const res = await tambahKaryawan(payload)
-      if (res.data.status) {
-        setAlert({ type: 'success', message: res.data.message })
-        setFormData({ id_karyawan: '', nama_karyawan: '', id_divisi: '', faceDescriptor: '' })
-      } else {
-        setAlert({ type: 'danger', message: res.data.message })
-      }
-    } catch (err) {
-      const msg = err.response?.data?.message || 'Terjadi kesalahan saat menyimpan data.'
-      setAlert({ type: 'danger', message: msg })
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  if (loading) {
-    return <div className="spinner"></div>
-  }
+    } catch (err) { setAlert({ type: 'danger', message: 'Kamera error' }); }
+  };
 
   return (
-    <div className="tambah-karyawan">
-      <div className="page-header">
-        <h1>Tambah Karyawan</h1>
-      </div>
+    <div className="layout-wrapper">
+      {/* SIDEBAR Tampilan Saja */}
+      <aside className="sidebar">
+        <div className="sidebar-brand"><h2>KlikWajah</h2></div>
+        <nav className="menu-list">
+          <div className="menu-item">Dashboard</div>
+          <div className="menu-item active">Karyawan</div>
+          <div className="menu-item">Absensi</div>
+          <div className="menu-item">Laporan</div>
+        </nav>
+      </aside>
 
-      {alert && (
-        <div className={`alert alert-${alert.type}`} id="form-alert">
-          {alert.type === 'success' ? '✅' : '❌'} {alert.message}
+      {/* MAIN CONTENT */}
+      <main className="main-content">
+        <header className="blue-header">
+          <div className="header-top">
+            <span className="smart-text">SMART ATTANDANCE</span>
+            <div className="user-profile">
+              <span></span>
+              <div className="avatar-circle">Y</div>
+            </div>
+          </div>
+        </header>
+
+        <div className="content-body">
+          <div className="form-card">
+            <h3>Form Tambah Karyawan</h3>
+            <form className="form-grid">
+              <div className="input-box">
+                <label>ID Karyawan</label>
+                <input type="text" placeholder="Input ID" />
+              </div>
+              <div className="input-box">
+                <label>NIK</label>
+                <input type="text" placeholder="Input NIK" />
+              </div>
+              <div className="input-box full-width">
+                <label>Nama Karyawan</label>
+                <input type="text" placeholder="Input Nama" />
+              </div>
+              
+              <div className="camera-box full-width">
+                <div className="video-viewport">
+                  <video ref={videoRef} autoPlay playsInline />
+                  {!cameraActive && <div className="cam-placeholder">Kamera Nonaktif</div>}
+                </div>
+                <button type="button" className="btn-save" onClick={startCamera}>Buka Kamera</button>
+              </div>
+              
+              <button type="submit" className="btn-save full-width">SIMPAN DATA KARYAWAN</button>
+            </form>
+          </div>
         </div>
-      )}
-
-      <div className="card form-card">
-        <form onSubmit={handleSubmit} id="form-tambah-karyawan">
-          <div className="form-grid">
-            <div className="form-group">
-              <label htmlFor="id_karyawan">ID Karyawan</label>
-              <input
-                type="text"
-                className="form-control"
-                id="id_karyawan"
-                name="id_karyawan"
-                placeholder="Masukkan ID karyawan"
-                value={formData.id_karyawan}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="nama_karyawan">Nama Karyawan</label>
-              <input
-                type="text"
-                className="form-control"
-                id="nama_karyawan"
-                name="nama_karyawan"
-                placeholder="Masukkan nama lengkap"
-                value={formData.nama_karyawan}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="id_divisi">Divisi</label>
-              <select
-                className="form-control"
-                id="id_divisi"
-                name="id_divisi"
-                value={formData.id_divisi}
-                onChange={handleChange}
-                required
-              >
-                <option value="">-- Pilih Divisi --</option>
-                {divisiList.map((d) => (
-                  <option key={d.id_divisi} value={d.id_divisi}>
-                    {d.nama_divisi}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Camera Section */}
-            <div className="form-group full-width camera-section">
-              <label>Pindai Wajah</label>
-              
-              <div className="camera-viewport">
-                {!cameraActive && !capturedImage && (
-                  <div className="camera-placeholder">
-                    <div className="camera-placeholder-icon">📸</div>
-                    <p>Aktifkan kamera untuk memindai wajah karyawan.</p>
-                  </div>
-                )}
-                
-                <video 
-                  ref={videoRef} 
-                  autoPlay 
-                  playsInline 
-                  className={`camera-video ${cameraActive && !capturedImage ? 'active' : ''}`}
-                ></video>
-                
-                {cameraActive && !capturedImage && (
-                  <div className="face-indicator detected">
-                    <span className="indicator-dot"></span> Mendeteksi Wajah...
-                  </div>
-                )}
-                
-                {capturedImage && (
-                  <div className="captured-preview">
-                    <img src={capturedImage} alt="Captured Face" />
-                    <div className="captured-badge">✓ Wajah Tersimpan</div>
-                  </div>
-                )}
-                
-                <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
-              </div>
-              
-              <div className="camera-controls">
-                {!cameraActive && !capturedImage && (
-                  <button type="button" className="btn-camera btn-open-camera" onClick={startCamera}>
-                    📸 Buka Kamera
-                  </button>
-                )}
-                
-                {cameraActive && !capturedImage && (
-                  <>
-                    <button type="button" className="btn-camera btn-capture" onClick={captureImage}>
-                      <span className="capture-btn-inner">🧿 Ambil Foto</span>
-                    </button>
-                    <button type="button" className="btn-camera btn-stop" onClick={stopCamera}>
-                      ❌ Batal
-                    </button>
-                  </>
-                )}
-                
-                {capturedImage && (
-                  <button type="button" className="btn-camera btn-retake" onClick={retakeImage}>
-                    🔄 Foto Ulang
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="form-group full-width">
-              <label htmlFor="faceDescriptor">Face Descriptor (JSON)</label>
-              <textarea
-                className="form-control descriptor-textarea"
-                id="faceDescriptor"
-                name="faceDescriptor"
-                placeholder='Data face descriptor dalam format JSON array, contoh: [0.123, -0.456, ...]'
-                rows="4"
-                value={formData.faceDescriptor}
-                onChange={handleChange}
-              />
-              <small className="form-hint">
-                💡 Data ini biasanya diisi otomatis dari kamera face recognition.
-              </small>
-            </div>
-          </div>
-
-          <div className="form-actions">
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={submitting}
-              id="btn-submit-karyawan"
-            >
-              {submitting ? (
-                <>
-                  <span className="btn-spinner"></span> Menyimpan...
-                </>
-              ) : (
-                <>💾 Simpan Karyawan</>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
+      </main>
     </div>
-  )
+  );
 }
 
-export default TambahKaryawan
+export default TambahKaryawan;

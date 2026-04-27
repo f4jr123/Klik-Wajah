@@ -1,75 +1,157 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const Karyawan = require('../model/Karyawan');
 const Divisi = require('../model/Divisi');
 
-// Mengubah route GET untuk mengembalikan JSON
-router.post('/', async function (req, res) {
-    try {
-        res.status(201).json({
-            status: true,
-            message: 'Data karyawan berhasil ditambahkan'
-        });
-    } catch (error) {
-        res.status(500).json({ status: false, message: error.message });
+/**
+ * --- KONFIGURASI MULTER ---
+ * Digunakan untuk menangani upload foto fisik karyawan.
+ * Foto disimpan di folder: public/uploads/karyawan/
+ */
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads/karyawan/');
+    },
+    filename: (req, file, cb) => {
+        // Format: NIK-Timestamp.ekstensi
+        const nik = req.body.nik || 'temp';
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, `${nik}-${uniqueSuffix}${path.extname(file.originalname)}`);
     }
 });
 
-// 1. Endpoint untuk mengambil data awal (User Info & List Divisi)
-// Di React, ini bisa dipanggil saat halaman "Tambah Karyawan" dimuat
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 2 * 1024 * 1024 }, // Batasi ukuran file maksimal 2MB
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        if (mimetype && extname) return cb(null, true);
+        cb(new Error("Hanya file gambar (jpg/png) yang diperbolehkan!"));
+    }
+});
+
+/**
+ * GET /api/karyawan
+ * Menampilkan semua daftar karyawan untuk tabel di Dashboard HRD.
+ */
+router.get('/', async function (req, res) {
+    try {
+        let rows = await Karyawan.getAllWithDivisi();
+        return res.status(200).json({
+            status: true,
+            data: rows
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: false, message: 'Gagal mengambil data karyawan' });
+    }
+});
+
+/**
+ * GET /api/karyawan/prepare-add
+ * Mengambil data divisi untuk pilihan dropdown di form tambah karyawan.
+ */
 router.get('/prepare-add', async function (req, res) {
     try {
-
         let divisiRows = await Divisi.getAll();
-
         return res.status(200).json({
             status: true,
             divisi: divisiRows
         });
     } catch (err) {
-        return res.status(500).json({ status: false, message: 'Terjadi kesalahan server' });
+        return res.status(500).json({ status: false, message: 'Gagal memuat data pendukung' });
     }
 });
 
-// 2. Endpoint untuk Tambah atau Update Wajah Karyawan
-router.post('/tambah', async (req, res) => {
+/**
+ * GET /api/karyawan/embeddings
+ * Endpoint KRUSIAL untuk Anti-Lag. Mengirim data wajah ke browser saat aplikasi dibuka.
+ */
+router.get('/embeddings', async function (req, res) {
     try {
-        let { id, id_karyawan, nama_karyawan, id_divisi, faceDescriptor } = req.body;
+        let rows = await Karyawan.getEmbeddings();
 
-        if (!faceDescriptor || faceDescriptor.length <= 2) {
+        // Parsing string JSON dari DB kembali menjadi Array agar bisa diolah AI di React
+        const formattedData = rows.map(row => ({
+            id: row.id,
+            id_karyawan: row.id_karyawan,
+            nama_karyawan: row.nama_karyawan,
+            face_embedding: row.face_embedding ? JSON.parse(row.face_embedding) : []
+        }));
+
+        return res.status(200).json({
+            status: true,
+            data: formattedData
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ status: false, message: 'Gagal sinkronisasi data wajah' });
+    }
+});
+
+/**
+ * POST /api/karyawan/tambah
+ * Endpoint untuk pendaftaran karyawan baru atau update biometrik wajah.
+ */
+router.post('/tambah', upload.single('foto'), async (req, res) => {
+    try {
+        // faceDescriptor adalah array 128 angka dari Python/AI
+        let { id, id_karyawan, nik, nama_karyawan, id_divisi, faceDescriptor } = req.body;
+        const fotoPath = req.file ? req.file.filename : null;
+
+        // Validasi minimal: Wajah wajib ada
+        if (!faceDescriptor) {
             return res.status(400).json({
                 status: false,
-                message: 'Data wajah tidak terdeteksi. Silakan coba lagi.'
+                message: 'Data wajah kosong. Silakan scan wajah terlebih dahulu.'
             });
         }
 
         if (id) {
-            // Mode Registrasi Ulang (Update)
-            await Karyawan.UpdateFace(id, JSON.stringify(faceDescriptor));
+            // MODE: Registrasi Ulang Wajah (Update)
+            let updateData = {
+                face_embedding: faceDescriptor // Tetap simpan sebagai string JSON
+            };
+            if (fotoPath) updateData.foto = fotoPath;
+
+            await Karyawan.UpdateFace(id, updateData);
             return res.status(200).json({
                 status: true,
-                message: 'Wajah karyawan berhasil diregistrasi ulang!'
+                message: 'Data wajah karyawan berhasil diperbarui!'
             });
+
         } else {
-            // Mode Tambah Karyawan Baru
+            // MODE: Tambah Karyawan Baru
+            if (!nik || !nama_karyawan) {
+                return res.status(400).json({ status: false, message: 'NIK dan Nama wajib diisi' });
+            }
+
             let Data = {
                 id_karyawan,
+                nik,
                 nama_karyawan,
                 id_divisi,
-                wajah: JSON.stringify(faceDescriptor)
+                foto: fotoPath,
+                face_embedding: faceDescriptor, // Array dari Python disimpan sebagai string JSON
+                status: 'aktif'
             };
+
             await Karyawan.Store(Data);
             return res.status(201).json({
                 status: true,
-                message: 'Karyawan baru berhasil ditambahkan!'
+                message: 'Karyawan baru berhasil didaftarkan!'
             });
         }
 
     } catch (err) {
-        console.error(err);
+        console.error("Registrasi Error:", err);
         return res.status(500).json({
             status: false,
-            message: 'Gagal menyimpan data. Pastikan ID Karyawan unik.'
+            message: 'Terjadi kesalahan server saat menyimpan data.'
         });
     }
 });

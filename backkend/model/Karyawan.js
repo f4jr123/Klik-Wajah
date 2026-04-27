@@ -31,7 +31,7 @@ class Karyawan {
     static async getEmbeddings() {
         return new Promise((resolve, reject) => {
             // Hanya ambil kolom yang diperlukan agar query kencang
-            const sql = 'SELECT id, id_karyawan, nama_karyawan, face_embedding FROM karyawan WHERE status = "aktif"';
+            const sql = 'SELECT id, nik, nama_karyawan, face_embedding FROM karyawan WHERE status = "aktif"';
             db.query(sql, (err, rows) => {
                 if (err) reject(err);
                 else resolve(rows);

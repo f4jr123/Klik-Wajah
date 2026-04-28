@@ -1,6 +1,7 @@
 /* Container Utama */
 .absensi-container {
-  background-color: #1a2c4e; /* Deep Blue Background */
+  background-color: #1a2c4e;
+  /* Deep Blue Background */
   min-height: 100vh;
   position: relative;
 }
@@ -35,15 +36,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  clip-path: polygon(0 0, 100% 0, 100% 88%, 0% 100%); /* Garis miring bawah */
+  clip-path: polygon(0 0, 100% 0, 100% 88%, 0% 100%);
+  /* Garis miring bawah */
 }
 
 /* Content & Card */
 .content-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: -120px; /* Melayang menutupi bagian miring */
+  margin-top: -120px;
+  /* Melayang menutupi bagian miring */
   padding: 0 20px;
+  position: relative;
+  z-index: 5;
 }
 
 .absensi-card {
@@ -51,7 +56,7 @@
   width: 100%;
   max-width: 900px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 

@@ -1,0 +1,19 @@
+# Dependency
+node_modules/
+
+# Environment variables (Sangat penting buat keamanan API)
+.env
+
+# Uploads (File gambar karyawan jangan di-push ke GitHub)
+backkend/public/uploads/
+*.jpg
+*.jpeg
+*.png
+
+# Build folder (kalau pakai React/Vite)
+dist/
+build/
+
+# OS metadata
+.DS_Store
+Thumbs.db

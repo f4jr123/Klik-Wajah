@@ -15,10 +15,9 @@ const storage = multer.diskStorage({
         cb(null, 'public/uploads/karyawan/');
     },
     filename: (req, file, cb) => {
-        // Format: NIK-Timestamp.ekstensi
-        const nik = req.body.nik || 'temp';
+        // Gunakan timestamp agar nama file unik jika NIK belum terbaca Multer
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, `${nik}-${uniqueSuffix}${path.extname(file.originalname)}`);
+        cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
 

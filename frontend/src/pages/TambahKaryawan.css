@@ -1,65 +1,81 @@
+/* Reset Body */
+body, html { margin: 0; padding: 0; overflow-x: hidden; }
+
 .layout-wrapper {
   display: flex;
   min-height: 100vh;
   background-color: #0f172a;
 }
 
+/* Sidebar Styling */
 .sidebar {
   width: 240px;
   background: #1e293b;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   padding: 2rem 1rem;
   border-right: 1px solid #334155;
 }
 
-.sidebar-brand h2 { color: #38bdf8; margin-bottom: 2rem; font-size: 1.2rem; }
+.sidebar-brand h2 { color: #38bdf8; margin-bottom: 2rem; font-size: 1.25rem; }
 
 .menu-item {
-  padding: 0.8rem;
+  display: block;
+  padding: 0.8rem 1rem;
   color: #94a3b8;
+  text-decoration: none;
   border-radius: 8px;
   margin-bottom: 0.5rem;
-  cursor: pointer;
+  transition: 0.3s;
 }
 
-.menu-item.active { background: #334155; color: #38bdf8; }
+.menu-item:hover, .menu-item.active { background: #334155; color: #38bdf8; }
 
-.main-content { flex: 1; }
+/* Main Content */
+.main-content { flex: 1; display: flex; flex-direction: column; }
 
 .blue-header {
   background: #6366f1;
-  padding: 1.5rem 2rem;
-  height: 120px;
+  padding: 1.5rem 3rem;
+  height: 140px;
   color: white;
 }
 
-.header-top { display: flex; justify-content: space-between; }
+.header-top { display: flex; justify-content: space-between; align-items: center; }
 
-.content-body {
-  padding: 0 2rem;
-  margin-top: -40px;
+.avatar-circle {
+  width: 35px; height: 35px; background: #818cf8; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid white; margin-left: 10px; font-weight: bold;
 }
+
+/* Form Area */
+.content-body { padding: 0 3rem; margin-top: -60px; }
 
 .form-card {
   background: #1e293b;
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: 12px;
   color: white;
   border: 1px solid #334155;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 .full-width { grid-column: span 2; }
 
-.input-box label { display: block; color: #94a3b8; margin-bottom: 5px; font-size: 13px; }
-.input-box input {
-  width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;
+.input-box label { display: block; color: #94a3b8; margin-bottom: 8px; font-size: 0.85rem; }
+.input-box input, .input-box select {
+  width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155;
+  color: white; border-radius: 8px; outline: none;
 }
 
 .video-viewport {
-  width: 100%; height: 250px; background: black; border-radius: 8px; overflow: hidden; margin: 10px 0;
+  width: 100%; height: 280px; background: #000; border-radius: 12px;
+  overflow: hidden; margin-bottom: 1rem; border: 1px solid #334155;
 }
-.video-viewport video { width: 100%; height: 100%; object-fit: cover; }
+.video-viewport video, .video-viewport img { width: 100%; height: 100%; object-fit: cover; }
 
-.btn-save {
-  width: 100%; padding: 12px; background: #6366f1; border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer;
-}
+.btn-save { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
+.btn-save-main { background: #6366f1; color: white; padding: 15px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }

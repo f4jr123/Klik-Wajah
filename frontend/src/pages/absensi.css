@@ -44,11 +44,11 @@
 .content-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: -200px;
-  /* Melayang menutupi bagian miring */
+  margin-top: 0;
   padding: 0 20px;
   position: relative;
   z-index: 5;
+  min-height: 260px;
 }
 
 .absensi-card {
@@ -58,6 +58,8 @@
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   overflow: hidden;
+  position: absolute;
+  top: -400px;
 }
 
 .card-header-info {
@@ -121,22 +123,28 @@
   font-size: 0.85rem;
   padding: 40px 0;
 }
+
 .video-frame {
   position: relative;
   border-radius: 15px;
   overflow: hidden;
-  border: 4px solid #6366f1; /* Warna Indigo sesuai tema kamu */
+  border: 4px solid #6366f1;
+  /* Warna Indigo sesuai tema kamu */
   background: #000;
 }
 
 .webcam-video {
   width: 100%;
-  transform: scaleX(-1); /* Mirror view agar natural bagi user */
+  transform: scaleX(-1);
+  /* Mirror view agar natural bagi user */
 }
 
 .overlay-scanning {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(99, 102, 241, 0.3);
   display: flex;
   justify-content: center;
@@ -147,9 +155,17 @@
 }
 
 @keyframes pulse {
-  0% { opacity: 0.5; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0.5; }
+  0% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0.5;
+  }
 }
 
 .status-text {

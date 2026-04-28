@@ -45,7 +45,7 @@ router.post('/submit-presensi', async (req, res) => {
         res.json({
             success: true,
             message: `Presensi ${tipe_absen} berhasil dicatat!`,
-            data: { nama: nama_karyawan, status: statusAbsen }
+            data: { nama: nama_karyawan, status: statusAbsen, waktu: moment().format('HH:mm:ss') }
         });
 
     } catch (err) {

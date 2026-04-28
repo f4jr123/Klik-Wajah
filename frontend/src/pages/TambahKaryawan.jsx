@@ -69,7 +69,7 @@ const TambahKaryawan = () => {
     setLoading(true);
 
     try {
-      // --- LANGKAH 1: KIRIM 5 FOTO KE PYTHON (UNTUK EMBEDDING) ---
+      // --- LANGKAH 1: KIRIM 5 FOTO KE PYTHON ---
       const facePayload = new FormData();
       capturedPhotos.forEach((blob, index) => {
         facePayload.append(`foto${index + 1}`, blob, `face_${index + 1}.jpg`);
@@ -78,19 +78,15 @@ const TambahKaryawan = () => {
       const pythonRes = await apiService.processEmbeddings(facePayload);
 
       if (pythonRes.data.status) {
-        // --- LANGKAH 2: KIRIM DATA & FOTO PERTAMA KE EXPRESS (UNTUK DATABASE) ---
+        // --- LANGKAH 2: KIRIM DATA KE EXPRESS ---
         const finalFormData = new FormData();
-
-        // Data Teks
         finalFormData.append('id_karyawan', formData.id_karyawan);
         finalFormData.append('nik', formData.nik);
         finalFormData.append('nama_karyawan', formData.nama_karyawan);
         finalFormData.append('id_divisi', formData.id_divisi);
-
-        // Hasil koordinat wajah dari Python (faceDescriptor sesuai req.body backend)
         finalFormData.append('faceDescriptor', JSON.stringify(pythonRes.data.face_embedding));
-
-        // Foto pertama sebagai profil fisik (sesuai upload.single('foto') di backend)
+        
+        // Foto pertama (index 0) dikirim sebagai file profil fisik
         finalFormData.append('foto', capturedPhotos[0], `profile_${formData.nik}.jpg`);
 
         const finalRes = await apiService.saveKaryawan(finalFormData);
@@ -103,7 +99,7 @@ const TambahKaryawan = () => {
       }
     } catch (err) {
       console.error("Detail Error:", err.response?.data || err.message);
-      alert("Gagal menyimpan data ke database. Cek console untuk detail.");
+      alert("Gagal menyimpan data. Pastikan folder uploads sudah ada.");
     } finally {
       setLoading(false);
     }
@@ -118,7 +114,7 @@ const TambahKaryawan = () => {
           style={{ backgroundColor: '#6c63ff', height: '180px', color: 'white' }}>
           <h6 className="fw-bold m-0" style={{ letterSpacing: '1px' }}>SMART ATTENDANCE</h6>
           <div className="d-flex align-items-center gap-2">
-            <img src="https://ui-avatars.com/api/?name=Yona&background=random"
+            <img src={`https://ui-avatars.com/api/?name=${formData.nama_karyawan || 'User'}&background=random`}
               alt="User" className="rounded-circle border border-2 border-white" width="35" />
             <span className="small">yona</span>
           </div>
@@ -176,14 +172,33 @@ const TambahKaryawan = () => {
             <div className="col-xl-5">
               <div className="card border-0 shadow-sm p-4 rounded-4 bg-white text-center">
                 <h6 className="fw-bold text-muted mb-3">CAPTURE WAJAH ({capturedPhotos.length}/5)</h6>
+                
                 <div className="position-relative rounded-4 overflow-hidden shadow-lg mx-auto"
                   style={{ width: '100%', maxWidth: '350px', aspectRatio: '3/4', backgroundColor: '#000' }}>
+                  
                   <video ref={videoRef} className="w-100 h-100"
                     style={{ objectFit: 'cover', transform: 'scaleX(-1)' }} muted></video>
+
+                  {/* --- KOTAK DETEKSI BIRU (FACE OVERLAY) --- */}
+                  <div className="position-absolute top-50 start-50 translate-middle"
+                    style={{
+                      width: '65%',
+                      height: '55%',
+                      border: '2px solid #3b82f6',
+                      borderRadius: '30px',
+                      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.4)',
+                      pointerEvents: 'none'
+                    }}>
+                    <div className="position-absolute top-0 start-50 translate-middle-x mt-n3">
+                         <span className="badge bg-primary text-white" style={{fontSize: '9px'}}>SCAN WAJAH</span>
+                    </div>
+                  </div>
+                  
                   <canvas ref={canvasRef} className="d-none"></canvas>
+                  
                   <button type="button" onClick={handleCekrek} disabled={capturedPhotos.length >= 5 || loading}
                     className="btn btn-white rounded-circle position-absolute bottom-0 start-50 translate-middle-x mb-4 shadow-lg d-flex align-items-center justify-content-center"
-                    style={{ width: '65px', height: '65px', backgroundColor: '#fff', border: 'none' }}>
+                    style={{ width: '65px', height: '65px', backgroundColor: '#fff', border: 'none', zIndex: 10 }}>
                     <Camera size={28} color="#4f46e5" />
                   </button>
                 </div>

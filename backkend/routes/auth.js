@@ -1,12 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken'); // Import JWT
+const jwt = require('jsonwebtoken');
 const Users = require('../model/Users');
 const Karyawan = require('../model/Karyawan');
-
-// Kunci rahasia untuk tanda tangan token (Simpan di .env di aplikasi nyata)
-const JWT_SECRET = 'kode_rahasia_sangat_aman_123';
 
 // --- ENDPOINT REGISTER ---
 router.post('/register', async (req, res) => {
@@ -24,7 +21,7 @@ router.post('/register', async (req, res) => {
 
         const userById = await Users.findByKaryawanId(id_karyawan);
         if (userById && userById.length > 0) {
-            return res.status(409).json({ status: false, message: 'ID Karyawan sudah memiliki akun.' });
+            return res.status(409).json({ status: false, message: 'ID Karyawan sudah terdaftar.' });
         }
 
         let enkripsi = await bcrypt.hash(pass, 10);
@@ -38,44 +35,42 @@ router.post('/register', async (req, res) => {
 
         return res.status(201).json({
             status: true,
-            message: 'Berhasil Registrasi! Silahkan Login.'
+            message: 'Berhasil Registrasi!'
         });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ status: false, message: 'Server Error saat registrasi.' });
+        return res.status(500).json({ status: false, message: 'Terjadi kesalahan pada server.' });
     }
 });
 
 // --- ENDPOINT LOGIN ---
 router.post('/login', async (req, res) => {
-    let { email, pass } = req.body;
+    const { email, pass } = req.body;
 
     try {
-        let Data = await Users.Login(email);
+        const Data = await Users.Login(email);
 
         if (Data.length > 0) {
-            let enkripsi = Data[0].pass;
-            let cek = await bcrypt.compare(pass, enkripsi);
+            const isMatch = await bcrypt.compare(pass, Data[0].pass);
 
-            if (cek) {
-                // MEMBUAT TOKEN
-                // Kita masukkan id dan role ke dalam payload token
+            if (isMatch) {
+                // Membuat Token dengan Secret dari .env
                 const token = jwt.sign(
                     {
                         userId: Data[0].id,
                         role: Data[0].role
                     },
-                    JWT_SECRET,
-                    { expiresIn: '24h' } // Token hangus dalam 24 jam
+                    process.env.JWT_SECRET,
+                    { expiresIn: '24h' }
                 );
 
                 return res.status(200).json({
                     status: true,
                     message: 'Login Berhasil',
-                    token: token, // Kirimkan token ini ke frontend/Postman
+                    token: token,
                     user: {
+                        id: Data[0].id,
                         nama: Data[0].nama,
-                        email: Data[0].email,
                         role: Data[0].role
                     }
                 });
@@ -87,16 +82,15 @@ router.post('/login', async (req, res) => {
         }
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ status: false, message: 'Terjadi error pada server.' });
+        return res.status(500).json({ status: false, message: 'Server Error.' });
     }
 });
 
-// Logout di JWT biasanya ditangani di sisi client (hapus token di storage)
-// Tapi kita buatkan endpoint simpel untuk konfirmasi
+// Endpoint: GET /api/auth/logout
 router.get('/logout', function (req, res) {
     return res.status(200).json({
         status: true,
-        message: 'Logout berhasil (Silahkan hapus token di sisi client)'
+        message: 'Logout berhasil. Silakan hapus token dari Local Storage frontend.'
     });
 });
 

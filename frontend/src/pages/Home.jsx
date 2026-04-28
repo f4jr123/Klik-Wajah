@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import './Home.css'
 
 function Home() {
   return (
@@ -25,7 +24,7 @@ function Home() {
           </h1>
 
           <p className="hero-description">
-            Klik-Wajah adalah sistem absensi berbasis face recognition yang memudahkan 
+            Klik-Wajah adalah sistem absensi berbasis face recognition yang memudahkan
             proses pencatatan kehadiran karyawan secara otomatis, akurat, dan efisien.
           </p>
 
@@ -57,7 +56,7 @@ function Home() {
       {/* Features Section */}
       <section className="features">
         <h2 className="features-title">Fitur <span className="text-gradient">Unggulan</span></h2>
-        
+
         <div className="features-grid">
           <div className="feature-card card">
             <div className="feature-icon">🎯</div>

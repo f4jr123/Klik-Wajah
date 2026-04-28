@@ -11,7 +11,7 @@ import {
 
 const Sidebar = ({ activePage = 'Dashboard' }) => {
   const menus = [
-    { name: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/' },
+    { name: 'Dashboard', icon: <LayoutDashboard size={18} />, path: '/home' },
     { name: 'Pengajuan Absen', icon: <FileText size={18} />, path: '/pengajuan-absen' },
     { name: 'Absensi', icon: <List size={18} />, path: '/absensi' },
     { name: 'Divisi', icon: <Building2 size={18} />, path: '/divisi' },

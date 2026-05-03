@@ -29,6 +29,10 @@ const apiService = {
     });
   },
 
+  getKaryawan: () => {
+    return axios.get(`${EXPRESS_BASE_URL}/karyawan`);
+  },
+
   getEmbeddings: () => {
     return axios.get(`${EXPRESS_BASE_URL}/karyawan/embeddings`);
   },

@@ -12,7 +12,7 @@ router.post('/submit-presensi', async (req, res) => {
         const { id_karyawan, tipe_absen, nama_karyawan, pola_tangan } = req.body;
         const hariIni = moment().format('YYYY-MM-DD');
 
-        // Validasi via Model: Cek duplikasi
+        // 1. Validasi Duplikasi: Cek apakah tipe absen yang SAMA sudah dilakukan hari ini
         const sudahAbsen = await Absensi.checkExisting(id_karyawan, hariIni, tipe_absen);
         if (sudahAbsen) {
             return res.status(400).json({
@@ -21,7 +21,21 @@ router.post('/submit-presensi', async (req, res) => {
             });
         }
 
-        // Tentukan status
+        // --- 2. 🛡️ ATURAN BARU: Cegah Absen Keluar Sebelum Absen Masuk ---
+        if (tipe_absen === 'keluar') {
+            // Kita pinjam fungsi checkExisting untuk mengecek absen 'masuk'
+            const sudahAbsenMasuk = await Absensi.checkExisting(id_karyawan, hariIni, 'masuk');
+
+            if (!sudahAbsenMasuk) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Ditolak! Anda belum absen masuk hari ini."
+                });
+            }
+        }
+        // -----------------------------------------------------------------
+
+        // 3. Tentukan status (hadir/telat)
         let statusAbsen = 'hadir';
         if (tipe_absen === 'masuk') {
             const sekarang = moment();
@@ -29,17 +43,17 @@ router.post('/submit-presensi', async (req, res) => {
             if (sekarang.isAfter(batas)) statusAbsen = 'telat';
         }
 
-        // Susun objek data sesuai kolom DB
+        // 4. Susun objek data sesuai kolom DB
         const payload = {
             id_karyawan: id_karyawan,
             tanggal: hariIni,
             jam_log: moment().format('YYYY-MM-DD HH:mm:ss'),
             tipe_absen: tipe_absen,
             status: statusAbsen,
-            pola_tangan: pola_tangan || 'jempol' // Default dari AI atau fallback
+            pola_tangan: pola_tangan || 'tidak_terdeteksi'
         };
 
-        // Eksekusi via Model
+        // 5. Eksekusi via Model
         await Absensi.Store(payload);
 
         res.json({
